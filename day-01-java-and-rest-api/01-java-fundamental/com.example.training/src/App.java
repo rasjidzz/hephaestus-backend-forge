@@ -12,9 +12,12 @@ public class App {
 
         customers = customerService.getAllCustomer();
         for (Customer customer : customers) {
-            customer.getDisplayName();
+            int i = 1;
+            System.out.println(i + " - " + customer.getFullName() + " - " + customer.getEmail() + " - "
+                    + customer.getPhoneNumber());
         }
         Customer cust1 = customerService.getCustomerById(2L);
+        System.out.println("Customer Detail : ");
         cust1.getDisplayName();
     }
 }

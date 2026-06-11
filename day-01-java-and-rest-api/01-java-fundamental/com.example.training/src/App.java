@@ -9,8 +9,10 @@ public class App {
         CustomerService customerService = new CustomerService();
         customerService.createCustomer("Budi Santoso", "budi@mail.com", "08123456789");
         customerService.createCustomer("Siti Aminah", "siti@mail.com", "08222222222");
+        customerService.createCustomer("Test", "test@mail.com", "0811");
 
         customers = customerService.getAllCustomer();
+        System.out.println("Customer List : ");
         int i = 1;
         for (Customer customer : customers) {
             System.out.println(i + " - " + customer.getFullName() + " - " + customer.getEmail() + " - "
@@ -18,7 +20,23 @@ public class App {
             i++;
         }
         Customer cust1 = customerService.getCustomerById(1L);
-        System.out.println("Customer Detail : ");
+        System.out.println("\nCustomer Detail : ");
         cust1.getDisplayName();
+
+        customerService.updateCustomerEmail(1L, "emailbudibaru@mail.com");
+        cust1 = customerService.getCustomerById(1L);
+        System.out.println("\nCustomer Detail (After Update): ");
+        cust1.getDisplayName();
+
+        customerService.deleteCustomer(3L);
+        System.out.println("\nCustomer List (After Delete): ");
+        customers = customerService.getAllCustomer();
+        i = 1;
+        for (Customer customer : customers) {
+            System.out.println(i + " - " + customer.getFullName() + " - " + customer.getEmail() + " - "
+                    + customer.getPhoneNumber());
+            i++;
+        }
+
     }
 }

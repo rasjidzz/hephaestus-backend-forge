@@ -12,7 +12,8 @@ public class App {
         customerService.createCustomer("Test", "test@mail.com", "0811");
 
         customers = customerService.getAllCustomer();
-        System.out.println("Customer List : ");
+        System.out.println("Muhammad Risjad Shidqi Febian - 74525");
+        System.out.println("\nCustomer List : ");
         int i = 1;
         for (Customer customer : customers) {
             System.out.println(i + " - " + customer.getFullName() + " - " + customer.getEmail() + " - "

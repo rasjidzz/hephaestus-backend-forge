@@ -12,6 +12,7 @@ public class CustomerService {
     private Long sequence = 1L;
 
     public Customer createCustomer(String fullName, String email, String phoneNumber) {
+
         Customer newCust = new Customer(sequence, fullName, email, phoneNumber);
         customerStorage.put(sequence, newCust);
         sequence++;

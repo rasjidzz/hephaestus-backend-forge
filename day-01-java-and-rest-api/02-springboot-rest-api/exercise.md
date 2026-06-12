@@ -119,16 +119,16 @@ Expected status:
 
 ## Acceptance Criteria
 
-- [ ] Application bisa berjalan di `localhost:8080`.
-- [ ] `POST /api/v1/customers` berjalan.
-- [ ] `GET /api/v1/customers/{id}` berjalan.
-- [ ] `GET /api/v1/customers` berjalan.
-- [ ] Response JSON menggunakan `snake_case`.
-- [ ] Controller tidak berisi business logic utama.
-- [ ] Service berisi business logic.
-- [ ] Data disimpan di memory.
-- [ ] Tidak menggunakan database.
-- [ ] Pull Request dibuat ke branch `master`.
+- [x] Application bisa berjalan di `localhost:8080`.
+- [x] `POST /api/v1/customers` berjalan.
+- [x] `GET /api/v1/customers/{id}` berjalan.
+- [x] `GET /api/v1/customers` berjalan.
+- [x] Response JSON menggunakan `snake_case`.
+- [x] Controller tidak berisi business logic utama.
+- [x] Service berisi business logic.
+- [x] Data disimpan di memory.
+- [x] Tidak menggunakan database.
+- [x] Pull Request dibuat ke branch `master`.
 
 ## Optional Challenge
 

@@ -51,8 +51,8 @@ public class CustomerService {
     public CustomerResponse getCustomerById(@PathVariable Long id) {
         Customer cust = customerStorage.get(id);
 
-        if (cust == null) {
-
+         if (cust == null) {
+            throw new RuntimeException("Customer tidak ditemukan");
         }
 
         CustomerResponse response = new CustomerResponse();

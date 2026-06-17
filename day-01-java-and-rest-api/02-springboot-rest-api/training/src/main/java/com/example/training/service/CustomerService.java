@@ -49,7 +49,6 @@ public class CustomerService {
         response.setFullName(newCust.getFullName());
         response.setEmail(newCust.getEmail());
         response.setPhoneNumber(newCust.getPhoneNumber());
-        response.setMessage("Berhasil menambahkan customer");
 
         sequence++;
         return response;
@@ -67,7 +66,6 @@ public class CustomerService {
         response.setEmail(cust.getEmail());
         response.setFullName(cust.getFullName());
         response.setPhoneNumber(cust.getPhoneNumber());
-        response.setMessage("Berhasil mendapatkan Customer");
 
         return response;
     }
@@ -98,7 +96,6 @@ public class CustomerService {
         response.setEmail(cust.getEmail());
         response.setFullName(cust.getFullName());
         response.setPhoneNumber(cust.getPhoneNumber());
-        response.setMessage("Customer id-" + id + " berhasil di delete");
 
         return response;
     }
@@ -127,7 +124,6 @@ public class CustomerService {
         response.setFullName(cust.getFullName());
         response.setEmail(cust.getEmail());
         response.setPhoneNumber(cust.getPhoneNumber());
-        response.setMessage("Customer berhasil di update");
 
         return response;
     }

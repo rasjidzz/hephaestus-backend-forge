@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.training.dto.ApiResponse;
 import com.example.training.dto.CreateCustomerRequest;
 import com.example.training.dto.CustomerResponse;
 import com.example.training.dto.UpdateCustomerRequest;
@@ -33,36 +34,91 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
+    // @PostMapping
+    //
+    // ic ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody
+    // CreateCustomerRequest request) {
+    // CustomerResponse response = customerService.createCustomer(request);
+    // return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    // }
+
+    // @GetMapping
+    //
+    // ic ResponseEntity<List<CustomerResponse>>
+    // getAllCustomer(@RequestParam(required = false) String full_name) {
+    // full_name != null && !full_name.isEmpty()) {
+    // return ResponseEntity.ok(customerService.searchCustomerByName(full_name));
+    // }
+    // return ResponseEntity.ok(customerService.getCustomers());
+    // }
+
+    // @GetMapping("/{id}")
+    //
+    // ic ResponseEntity<CustomerResponse> getCustomerById(@PathVariable long id) {
+    // return ResponseEntity.ok(customerService.getCustomerById(id));
+    // }
+
+    // @DeleteMapping("/{id}")
+    //
+    // ic ResponseEntity<CustomerResponse> deleteCustomerById(@PathVariable long id)
+    // {
+    // CustomerResponse response = customerService.deleteCustomerById(id);
+
+    // return ResponseEntity.ok(response);
+    // }
+
+    // @PutMapping("/{id}")
+    //
+    // esponseEntity<CustomerResponse> updateCustomerById(@PathVariable long id,
+    // @Valid @RequestBody UpdateCustomerRequest request) {
+    // CustomerResponse response = customerService.updateCustomerById(id, request);
+    // return ResponseEntity.ok(response);
+    // }
+
     @PostMapping
-    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CreateCustomerRequest request) {
+    public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(
+            @Valid @RequestBody CreateCustomerRequest request) {
         CustomerResponse response = customerService.createCustomer(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Customer berhasil ditambahkan", response));
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> getAllCustomer(@RequestParam(required = false) String full_name) {
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomer(
+            @RequestParam(required = false) String full_name) {
+        List<CustomerResponse> responses;
+
         if (full_name != null && !full_name.isEmpty()) {
-            return ResponseEntity.ok(customerService.searchCustomerByName(full_name));
+            responses = customerService.searchCustomerByName(full_name);
+            return ResponseEntity.ok()
+                    .body(ApiResponse.success("Pencarian customer dengan nama '" + full_name + "' berhasil",
+                            responses));
         }
-        return ResponseEntity.ok(customerService.getCustomers());
+
+        responses = customerService.getCustomers();
+        return ResponseEntity.ok()
+                .body(ApiResponse.success("Berhasil mendapatkan semua customer", responses));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable long id) {
-        return ResponseEntity.ok(customerService.getCustomerById(id));
+    public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable long id) {
+        CustomerResponse response = customerService.getCustomerById(id);
+        return ResponseEntity.ok()
+                .body(ApiResponse.success("Berhasil mendapatkan customer dengan ID " + id, response));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CustomerResponse> deleteCustomerById(@PathVariable long id) {
+    public ResponseEntity<ApiResponse<CustomerResponse>> deleteCustomerById(@PathVariable long id) {
         CustomerResponse response = customerService.deleteCustomerById(id);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .body(ApiResponse.success("Customer dengan ID " + id + " berhasil dihapus", response));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerResponse> updateCustomerById(@PathVariable long id,
+    public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomerById(@PathVariable long id,
             @Valid @RequestBody UpdateCustomerRequest request) {
         CustomerResponse response = customerService.updateCustomerById(id, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .body(ApiResponse.success("Customer dengan ID " + id + " berhasil diupdate", response));
     }
 }

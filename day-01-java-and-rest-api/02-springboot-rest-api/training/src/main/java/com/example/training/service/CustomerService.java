@@ -28,18 +28,91 @@ public class CustomerService {
         this.globalExceptionHandler = globalExceptionHandler;
     }
 
-    public List<CustomerResponse> getCustomers() {
+    // Old Code
+    // public List<CustomerResponse> getCustomers() {
+    // List<CustomerResponse> responses = new ArrayList<>();
+
+    // for (Customer customer : customerStorage.values()) {
+    // CustomerResponse customerResponse = new CustomerResponse();
+    // customerResponse.setId(customer.getId());
+    // customerResponse.setFullName(customer.getFullName());
+    // customerResponse.setEmail(customer.getEmail());
+    // customerResponse.setPhoneNumber(customer.getPhoneNumber());
+    // customerResponse.setCreatedAt(customer.getCreatedAt());
+    // customerResponse.setUpdatedAt(customer.getUpdatedAt());
+
+    // responses.add(customerResponse);
+    // }
+    // return responses;
+    // }
+    // public List<CustomerResponse> searchCustomerByName(String full_name) {
+    // List<CustomerResponse> responses = new ArrayList<>();
+
+    // for (Customer customer : customerStorage.values()) {
+    // if (customer.getFullName().toLowerCase().contains(full_name.toLowerCase())) {
+    // CustomerResponse customerResponse = new CustomerResponse();
+    // customerResponse.setId(customer.getId());
+    // customerResponse.setFullName(customer.getFullName());
+    // customerResponse.setEmail(customer.getEmail());
+    // customerResponse.setPhoneNumber(customer.getPhoneNumber());
+
+    // responses.add(customerResponse);
+    // }
+    // }
+
+    // return responses;
+    // }
+
+    // public List<CustomerResponse> searchCustomerByEmail(String email) {
+    // List<CustomerResponse> responses = new ArrayList<>();
+
+    // for (Customer customer : customerStorage.values()) {
+    // if (customer.getEmail().toLowerCase().contains(email.toLowerCase())) {
+    // CustomerResponse customerResponse = new CustomerResponse();
+    // customerResponse.setId(customer.getId());
+    // customerResponse.setFullName(customer.getFullName());
+    // customerResponse.setEmail(customer.getEmail());
+    // customerResponse.setPhoneNumber(customer.getPhoneNumber());
+
+    // responses.add(customerResponse);
+    // }
+    // }
+
+    // return responses;
+    // }
+    // Old Code
+
+    // helper toCustomerResponse
+    public CustomerResponse toCustomerResponse(Customer customer) {
+        CustomerResponse customerResponse = new CustomerResponse();
+        customerResponse.setId(customer.getId());
+        customerResponse.setFullName(customer.getFullName());
+        customerResponse.setEmail(customer.getEmail());
+        customerResponse.setPhoneNumber(customer.getPhoneNumber());
+        customerResponse.setCreatedAt(customer.getCreatedAt());
+        customerResponse.setUpdatedAt(customer.getUpdatedAt());
+        return customerResponse;
+    }
+
+    public List<CustomerResponse> getCustomers(String email, String full_name) {
         List<CustomerResponse> responses = new ArrayList<>();
+
         for (Customer customer : customerStorage.values()) {
             CustomerResponse customerResponse = new CustomerResponse();
-            customerResponse.setId(customer.getId());
-            customerResponse.setFullName(customer.getFullName());
-            customerResponse.setEmail(customer.getEmail());
-            customerResponse.setPhoneNumber(customer.getPhoneNumber());
-            customerResponse.setCreatedAt(customer.getCreatedAt());
-            customerResponse.setUpdatedAt(customer.getUpdatedAt());
-
-            responses.add(customerResponse);
+            if (email != null && !email.isEmpty()) {
+                if (customer.getEmail().toLowerCase().contains(email.toLowerCase())) {
+                    customerResponse = toCustomerResponse(customer);
+                    responses.add(customerResponse);
+                }
+            } else if (full_name != null && !full_name.isEmpty()) {
+                if (customer.getFullName().toLowerCase().contains(full_name.toLowerCase())) {
+                    customerResponse = toCustomerResponse(customer);
+                    responses.add(customerResponse);
+                }
+            } else {
+                customerResponse = toCustomerResponse(customer);
+                responses.add(customerResponse);
+            }
         }
         return responses;
     }
@@ -139,42 +212,6 @@ public class CustomerService {
         response.setPhoneNumber(cust.getPhoneNumber());
 
         return response;
-    }
-
-    public List<CustomerResponse> searchCustomerByName(String full_name) {
-        List<CustomerResponse> responses = new ArrayList<>();
-
-        for (Customer customer : customerStorage.values()) {
-            if (customer.getFullName().toLowerCase().contains(full_name.toLowerCase())) {
-                CustomerResponse customerResponse = new CustomerResponse();
-                customerResponse.setId(customer.getId());
-                customerResponse.setFullName(customer.getFullName());
-                customerResponse.setEmail(customer.getEmail());
-                customerResponse.setPhoneNumber(customer.getPhoneNumber());
-
-                responses.add(customerResponse);
-            }
-        }
-
-        return responses;
-    }
-
-    public List<CustomerResponse> searchCustomerByEmail(String email) {
-        List<CustomerResponse> responses = new ArrayList<>();
-
-        for (Customer customer : customerStorage.values()) {
-            if (customer.getEmail().toLowerCase().contains(email.toLowerCase())) {
-                CustomerResponse customerResponse = new CustomerResponse();
-                customerResponse.setId(customer.getId());
-                customerResponse.setFullName(customer.getFullName());
-                customerResponse.setEmail(customer.getEmail());
-                customerResponse.setPhoneNumber(customer.getPhoneNumber());
-
-                responses.add(customerResponse);
-            }
-        }
-
-        return responses;
     }
 
     public CustomerResponse patchCustomerById(@PathVariable Long id, @RequestBody PatchCustomerRequest entity) {

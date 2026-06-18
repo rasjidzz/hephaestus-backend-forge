@@ -66,23 +66,25 @@ public class CustomerController {
                         @RequestParam(required = false) String email) {
                 List<CustomerResponse> responses;
 
-                if (full_name != null && !full_name.isEmpty()) {
-                        responses = customerService.searchCustomerByName(full_name);
-                        return ResponseEntity.ok()
-                                        .body(WebResponse.success(
-                                                        "Pencarian customer dengan nama '" + full_name + "' berhasil",
-                                                        responses));
-                }
+                // Old Code
+                // if (full_name != null && !full_name.isEmpty()) {
+                // responses = customerService.searchCustomerByName(full_name);
+                // return ResponseEntity.ok()
+                // .body(WebResponse.success(
+                // "Pencarian customer dengan nama '" + full_name + "' berhasil",
+                // responses));
+                // }
 
-                if (email != null && !email.isEmpty()) {
-                        responses = customerService.searchCustomerByEmail(email);
-                        return ResponseEntity.ok()
-                                        .body(WebResponse.success(
-                                                        "Pencarian customer dengan email '" + email + "' berhasil",
-                                                        responses));
-                }
+                // if (email != null && !email.isEmpty()) {
+                // responses = customerService.searchCustomerByEmail(email);
+                // return ResponseEntity.ok()
+                // .body(WebResponse.success(
+                // "Pencarian customer dengan email '" + email + "' berhasil",
+                // responses));
+                // }
+                // Old Code
 
-                responses = customerService.getCustomers();
+                responses = customerService.getCustomers(email, full_name);
                 return ResponseEntity.ok()
                                 .body(WebResponse.success("Berhasil mendapatkan semua customer", responses));
         }

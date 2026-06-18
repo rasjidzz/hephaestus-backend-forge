@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.example.training.dto.LoginRequest;
+import com.example.training.exception.UnauthorizedException;
 import com.example.training.security.AuthUtils;
 import com.example.training.user.entity.Role;
 import com.example.training.user.entity.User;
@@ -73,7 +74,8 @@ public class AuthService {
 
         } catch (Exception ex) {
 
-            throw new RuntimeException("Unauthorized");
+            throw new UnauthorizedException(
+                "Authentication is required");
         }
     }
 }

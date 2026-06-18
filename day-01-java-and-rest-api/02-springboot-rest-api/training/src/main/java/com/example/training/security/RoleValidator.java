@@ -1,5 +1,6 @@
 package com.example.training.security;
 
+import com.example.training.exception.ForbiddenException;
 import com.example.training.user.entity.Role;
 import com.example.training.user.entity.User;
 
@@ -15,7 +16,8 @@ public class RoleValidator {
             }
         }
 
-        throw new RuntimeException("Forbidden");
+        throw new ForbiddenException(
+                "You do not have permission to access this resource");
     }
     
 }

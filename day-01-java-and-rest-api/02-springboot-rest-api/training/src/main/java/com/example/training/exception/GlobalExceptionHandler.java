@@ -1,5 +1,6 @@
 package com.example.training.exception;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -52,6 +53,51 @@ public class GlobalExceptionHandler {
         response.setField(fieldError.getField());
         response.setMessage(fieldError.getDefaultMessage());
         return response;
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(
+            UnauthorizedException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        new ErrorResponse(
+                                "UNAUTHORIZED",
+                                ex.getMessage(),
+                                Collections.emptyList()
+                        )
+        );
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(
+            ForbiddenException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                        new ErrorResponse(
+                                "FORBIDDEN",
+                                ex.getMessage(),
+                                Collections.emptyList()
+                        )
+                );
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            NotFoundException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
+                        new ErrorResponse(
+                                "NOT_FOUND",
+                                ex.getMessage(),
+                                Collections.emptyList()
+                        )
+                );
     }
 
 }

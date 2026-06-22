@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.training_2.dto.CreateCustomerRequest;
 import com.example.training_2.dto.CustomerResponse;
+import com.example.training_2.dto.LoanApplicationResponse;
 import com.example.training_2.dto.PatchCustomerRequest;
 import com.example.training_2.dto.WebResponse;
 import com.example.training_2.service.CustomerService;
@@ -46,4 +47,14 @@ public class CustomerController {
             @RequestBody PatchCustomerRequest request) {
         return WebResponse.success("Successfully Patch Data", customerService.patch(id, request));
     }
+
+    @GetMapping("/{id}/loan-applications")
+    public WebResponse<List<LoanApplicationResponse>> getLoanApplicationsByCustomerId(
+            @PathVariable Long id) {
+
+        return WebResponse.success(
+                "Successfully Get Loan Applications By Customer Id",
+                customerService.getLoanApplicationsByCustomerId(id));
+    }
+
 }

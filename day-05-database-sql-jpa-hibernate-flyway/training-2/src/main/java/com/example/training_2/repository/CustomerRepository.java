@@ -1,5 +1,6 @@
 package com.example.training_2.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     boolean existsByNik(String nik);
 
     boolean existsByEmail(String email);
+
+    List<Customer> findByFullNameContainingIgnoreCase(String fullName);
 }

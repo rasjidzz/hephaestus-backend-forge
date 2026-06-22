@@ -19,12 +19,16 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @Entity
 @Table(name = "loan_applications")
+@NoArgsConstructor
 public class LoanApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,11 +43,11 @@ public class LoanApplication {
 
     @Column(name = "tenor_month", nullable = false)
     private int tenorMonth;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LoanApplicationStatus status;
-    
+
     private String purpose;
 
     @Column(name = "created_at")

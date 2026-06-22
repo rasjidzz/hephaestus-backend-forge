@@ -1,5 +1,6 @@
 package com.example.training_2.service;
 
+import com.example.training_2.repository.LoanApplicationRepository;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,9 +8,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.training_2.dto.CreateCustomerRequest;
 import com.example.training_2.dto.CustomerResponse;
+import com.example.training_2.dto.LoanApplicationResponse;
 import com.example.training_2.dto.PatchCustomerRequest;
 import com.example.training_2.dto.UpdateCustomerRequest;
 import com.example.training_2.entity.Customer;
+import com.example.training_2.entity.LoanApplication;
 import com.example.training_2.repository.CustomerRepository;
 
 import jakarta.transaction.Transactional;
@@ -18,7 +21,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
+    private final LoanApplicationRepository loanApplicationRepository;
     private final CustomerRepository customerRepository;
+
+    // CustomerService(LoanApplicationRepository loanApplicationRepository) {
+    // this.loanApplicationRepository = loanApplicationRepository;
+    // }
 
     private void fill(Customer customer, CreateCustomerRequest request) {
         customer.setFullName(request.getFullName());
@@ -52,23 +60,16 @@ public class CustomerService {
     }
 
     public List<CustomerResponse> getAll(String full_name) {
-        // return customerRepository.findAll().stream().map(this::toResponse).toList();
-        List<CustomerResponse> customerResponses = new ArrayList<>();
         List<Customer> customers = new ArrayList<>();
+        if (full_name != null) {
+            customers = customerRepository.findByFullNameContainingIgnoreCase(full_name);
+        } else {
+            customers = customerRepository.findAll();
+        }
 
-        customers = customerRepository.findAll();
-
+        List<CustomerResponse> customerResponses = new ArrayList<>();
         for (Customer customer : customers) {
-            CustomerResponse customerResponse = new CustomerResponse();
-            if (full_name != null && !full_name.isEmpty()) {
-                if (customer.getFullName().toLowerCase().contains(full_name.toLowerCase())) {
-                    customerResponse = mapToResponse(customer);
-                    customerResponses.add(customerResponse);
-                }
-            } else {
-                customerResponse = mapToResponse(customer);
-                customerResponses.add(customerResponse);
-            }
+            customerResponses.add(mapToResponse(customer));
         }
         return customerResponses;
     }
@@ -126,5 +127,35 @@ public class CustomerService {
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         customerRepository.delete(customer);
+    }
+
+    public List<LoanApplicationResponse> getLoanApplicationsByCustomerId(Long customerId) {
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Customer not found with id: " + customerId));
+
+        List<LoanApplication> loanApplications = loanApplicationRepository.findLoansByCustomerId(customerId);
+
+        return loanApplications.stream()
+                .map(this::mapLoanApplicationToResponse)
+                .toList();
+    }
+
+    private LoanApplicationResponse mapLoanApplicationToResponse(
+            LoanApplication loanApplication) {
+
+        LoanApplicationResponse response = new LoanApplicationResponse();
+
+        response.setId(loanApplication.getId());
+        response.setCustomerId(loanApplication.getCustomer().getId());
+        response.setLoanAmount(loanApplication.getLoanAmount());
+        response.setTenorMonth(loanApplication.getTenorMonth());
+        response.setPurpose(loanApplication.getPurpose());
+        response.setStatus(loanApplication.getStatus());
+        response.setCreatedAt(loanApplication.getCreatedAt());
+        response.setUpdatedAt(loanApplication.getUpdatedAt());
+
+        return response;
     }
 }

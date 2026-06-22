@@ -42,6 +42,44 @@ Flow bisnis sederhana:
 - Jika request tidak valid, return 400.
 - API response tidak boleh return Entity langsung.
 
+## Repayment Schedule Rules
+
+Repayment schedule dibuat setelah loan berstatus `APPROVED` atau `DISBURSED`. Pilih salah satu status pemicu dan gunakan secara konsisten.
+
+Untuk exercise ini, gunakan bunga **flat 12% per tahun**. Bunga wajib berasal dari konfigurasi backend, bukan dari input request customer dan bukan dari payment transaction.
+
+```properties
+loan.interest.annual-rate=0.12
+```
+
+Service membaca nilai config tersebut ketika membuat repayment schedule. Pada sistem nyata, rate biasanya berasal dari `loan_product`, lalu disimpan pada loan saat disetujui agar perubahan rate produk tidak mengubah cicilan loan yang sudah berjalan.
+
+```text
+monthly_interest_rate = annual_interest_rate / 12
+principal_amount      = loan_amount / tenor_month
+interest_amount       = loan_amount x monthly_interest_rate
+total_amount          = principal_amount + interest_amount
+```
+
+Contoh: loan Rp12.000.000 dengan tenor 12 bulan dan bunga 12% per tahun menghasilkan:
+
+```text
+principal_amount = 12.000.000 / 12 = 1.000.000
+interest_amount  = 12.000.000 x 1% = 120.000
+total_amount     = 1.120.000
+```
+
+Backend membuat 12 repayment schedule dengan `installment_number` berurutan dan `due_date` setiap bulan dari tanggal pencairan. Gunakan `BigDecimal` untuk nominal uang; tetapkan aturan pembulatan secara eksplisit apabila pembagian menghasilkan pecahan.
+
+`payment_transaction` mencatat uang yang dibayarkan, bukan menghitung ulang bunga dan pokok. Untuk pembayaran satu cicilan, buat payment transaction pada repayment schedule terkait dan ubah status schedule menjadi `PAID` jika total pembayaran memenuhi `total_amount`.
+
+Jika customer membayar dua bulan sekaligus, pendekatan sederhana adalah membuat dua payment transaction, masing-masing untuk satu repayment schedule. Jika satu transaksi harus dapat dibagi ke beberapa schedule, tambahkan tabel `payment_allocations`:
+
+```text
+payment_transaction (id, paid_amount, paid_at, ...)
+payment_allocation  (payment_transaction_id, repayment_schedule_id, amount)
+```
+
 ## Tables
 
 ### customers
@@ -575,4 +613,3 @@ Jika tugas utama selesai, tambahkan:
 - Index untuk `nik`, `email`, `customer_id`, dan `status`.
 - Soft delete customer.
 - DTO projection untuk query report.
-

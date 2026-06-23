@@ -34,13 +34,67 @@ Flow bisnis sederhana:
 - Loan application wajib memiliki `customer_id`, `loan_amount`, `tenor_month`, dan `purpose`.
 - Status awal loan application adalah `SUBMITTED`.
 - Status loan application bisa: `SUBMITTED`, `APPROVED`, `REJECTED`, `DISBURSED`, `CLOSED`.
-- Repayment schedule dibuat berdasarkan tenor.
+- Perubahan status harus mengikuti flow loan; status tidak boleh dilompati atau dikembalikan ke status sebelumnya.
+- Repayment schedule dibuat berdasarkan tenor saat loan berstatus `DISBURSED`.
 - Payment transaction mencatat pembayaran cicilan.
 - Jika customer tidak ditemukan saat create loan, return 404.
 - Jika loan tidak ditemukan, return 404.
 - Jika repayment schedule tidak ditemukan, return 404.
 - Jika request tidak valid, return 400.
 - API response tidak boleh return Entity langsung.
+
+## Repayment Schedule Rules
+
+### Loan Status Flow
+
+```text
+SUBMITTED --> APPROVED --> DISBURSED --> CLOSED
+     |
+     +--> REJECTED
+```
+
+- Saat create loan, backend menetapkan status `SUBMITTED`.
+- Loan `SUBMITTED` hanya dapat diubah menjadi `APPROVED` atau `REJECTED`.
+- Loan `APPROVED` hanya dapat diubah menjadi `DISBURSED`.
+- Saat status berubah ke `DISBURSED`, backend membuat repayment schedule sesuai `tenor_month`. Schedule hanya dibuat sekali.
+- Loan `DISBURSED` hanya dapat diubah menjadi `CLOSED` setelah seluruh repayment schedule berstatus `PAID`.
+- `REJECTED` dan `CLOSED` adalah status akhir; status tersebut tidak boleh diubah lagi.
+
+Repayment schedule tidak dibuat saat loan masih `SUBMITTED` atau hanya `APPROVED`; schedule dibuat ketika loan benar-benar `DISBURSED`.
+
+Untuk exercise ini, gunakan bunga **flat 12% per tahun**. Bunga wajib berasal dari konfigurasi backend, bukan dari input request customer dan bukan dari payment transaction.
+
+```properties
+loan.interest.annual-rate=0.12
+```
+
+Service membaca nilai config tersebut ketika membuat repayment schedule. Pada sistem nyata, rate biasanya berasal dari `loan_product`, lalu disimpan pada loan saat disetujui agar perubahan rate produk tidak mengubah cicilan loan yang sudah berjalan.
+
+```text
+monthly_interest_rate = annual_interest_rate / 12
+principal_amount      = loan_amount / tenor_month
+interest_amount       = loan_amount x monthly_interest_rate
+total_amount          = principal_amount + interest_amount
+```
+
+Contoh: loan Rp12.000.000 dengan tenor 12 bulan dan bunga 12% per tahun menghasilkan:
+
+```text
+principal_amount = 12.000.000 / 12 = 1.000.000
+interest_amount  = 12.000.000 x 1% = 120.000
+total_amount     = 1.120.000
+```
+
+Backend membuat 12 repayment schedule dengan `installment_number` berurutan dan `due_date` setiap bulan dari tanggal pencairan. Gunakan `BigDecimal` untuk nominal uang; tetapkan aturan pembulatan secara eksplisit apabila pembagian menghasilkan pecahan.
+
+`payment_transaction` mencatat uang yang dibayarkan, bukan menghitung ulang bunga dan pokok. Untuk pembayaran satu cicilan, buat payment transaction pada repayment schedule terkait dan ubah status schedule menjadi `PAID` jika total pembayaran memenuhi `total_amount`.
+
+Jika customer membayar dua bulan sekaligus, pendekatan sederhana adalah membuat dua payment transaction, masing-masing untuk satu repayment schedule. Jika satu transaksi harus dapat dibagi ke beberapa schedule, tambahkan tabel `payment_allocations`:
+
+```text
+payment_transaction (id, paid_amount, paid_at, ...)
+payment_allocation  (payment_transaction_id, repayment_schedule_id, amount)
+```
 
 ## Tables
 
@@ -575,4 +629,3 @@ Jika tugas utama selesai, tambahkan:
 - Index untuk `nik`, `email`, `customer_id`, dan `status`.
 - Soft delete customer.
 - DTO projection untuk query report.
-

@@ -225,13 +225,14 @@ Hindari log yang berisi username bersama password, token, nama lengkap, NIK, dan
 4. Tambahkan support `X-Correlation-Id` dan `correlation_id` pada error response. (log)
 5. Tambahkan structured log untuk login, customer created, loan submitted, approve/reject, forbidden access, validation error, dan unexpected error. (log)
 6. Pastikan data sensitif serta raw PII tidak masuk log. (log)
-7. Test manual dengan Postman, baik dengan maupun tanpa header `X-Correlation-Id`.
+7. Test manual dengan Postman, baik dengan maupun tanpa header `X-Correlation-Id`. (log)
 8. Push ke fork dan buat Pull Request ke branch `master`.
+
 
 ## Acceptance Criteria
 
-- [ ] Tiga service memiliki unit test dengan JUnit 5, Mockito, dan Given-When-Then.
-- [ ] Happy path, negative path, `401`, `403`, approval APPROVER, dan penolakan STAFF dites.
+- [ ] semua service memiliki unit test dengan JUnit 5, Mockito, dan Given-When-Then.
+- [ ] Happy path, negative path,semuaa service.
 - [ ] `CODE_REVIEW_CHECKLIST.md` mencakup correctness, error handling, authorization, testing, logging, dan PII.
 - [ ] API mendukung/generate `X-Correlation-Id` dan error response memuat `correlation_id`.
 - [ ] Structured fields serta level `info`/`warn`/`error` digunakan dengan benar.

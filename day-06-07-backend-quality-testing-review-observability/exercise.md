@@ -161,17 +161,17 @@ Tambahkan logging yang aman dan traceable pada API.
 
 ### Required Logging Events
 
-| Scenario | Level | Event |
-|---|---|---|
-| Login success | `info` | `auth_login_success` |
-| Login failed | `warn` | `auth_login_failed` |
-| Customer created | `info` | `customer_created` |
-| Loan application submitted | `info` | `loan_application_submitted` |
-| Loan application approved | `info` | `loan_application_approved` |
-| Loan application rejected | `info` | `loan_application_rejected` |
-| Forbidden access | `warn` | `access_denied` |
-| Validation error | `warn` | `validation_error` |
-| Unexpected error | `error` | `unexpected_error` |
+| Scenario                   | Level   | Event                        |
+| -------------------------- | ------- | ---------------------------- |
+| Login success              | `info`  | `auth_login_success`         |
+| Login failed               | `warn`  | `auth_login_failed`          |
+| Customer created           | `info`  | `customer_created`           |
+| Loan application submitted | `info`  | `loan_application_submitted` |
+| Loan application approved  | `info`  | `loan_application_approved`  |
+| Loan application rejected  | `info`  | `loan_application_rejected`  |
+| Forbidden access           | `warn`  | `access_denied`              |
+| Validation error           | `warn`  | `validation_error`           |
+| Unexpected error           | `error` | `unexpected_error`           |
 
 ### Correlation ID Header dan Error Response
 
@@ -204,15 +204,34 @@ Untuk error tak terduga:
 ### Safe Log Examples
 
 ```json
-{"level":"info","event":"loan_application_submitted","application_id":"APP-001","customer_id":"CUST-001","correlation_id":"REQ-20260424-001"}
+{
+  "level": "info",
+  "event": "loan_application_submitted",
+  "application_id": "APP-001",
+  "customer_id": "CUST-001",
+  "correlation_id": "REQ-20260424-001"
+}
 ```
 
 ```json
-{"level":"warn","event":"access_denied","user_id":"USR-001","role":"STAFF","endpoint":"/api/v1/loan-applications/1/approve","error_code":"FORBIDDEN","correlation_id":"REQ-20260424-001"}
+{
+  "level": "warn",
+  "event": "access_denied",
+  "user_id": "USR-001",
+  "role": "STAFF",
+  "endpoint": "/api/v1/loan-applications/1/approve",
+  "error_code": "FORBIDDEN",
+  "correlation_id": "REQ-20260424-001"
+}
 ```
 
 ```json
-{"level":"error","event":"unexpected_error","error_code":"INTERNAL_SERVER_ERROR","correlation_id":"REQ-20260424-001"}
+{
+  "level": "error",
+  "event": "unexpected_error",
+  "error_code": "INTERNAL_SERVER_ERROR",
+  "correlation_id": "REQ-20260424-001"
+}
 ```
 
 Hindari log yang berisi username bersama password, token, nama lengkap, NIK, dan nomor telepon. Jangan log full request body.
@@ -222,10 +241,12 @@ Hindari log yang berisi username bersama password, token, nama lengkap, NIK, dan
 1. Tambahkan unit test untuk.
 2. Gunakan Given-When-Then dan Mockito untuk happy path, negative path, behavior `401`/`403`, serta approve/reject loan.
 3. Buat `CODE_REVIEW_CHECKLIST.md` sesuai area checklist di atas.
+<!-- Ini Dikerjain -->
 4. Tambahkan support `X-Correlation-Id` dan `correlation_id` pada error response. (log)
 5. Tambahkan structured log untuk login, customer created, loan submitted, approve/reject, forbidden access, validation error, dan unexpected error. (log)
 6. Pastikan data sensitif serta raw PII tidak masuk log. (log)
 7. Test manual dengan Postman, baik dengan maupun tanpa header `X-Correlation-Id`.
+<!-- Ini Dikerjain -->
 8. Push ke fork dan buat Pull Request ke branch `master`.
 
 ## Acceptance Criteria

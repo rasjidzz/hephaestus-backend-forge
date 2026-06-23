@@ -14,14 +14,17 @@ import com.example.training_2.entity.Customer;
 import com.example.training_2.entity.LoanApplication;
 import com.example.training_2.entity.LoanApplicationStatus;
 import com.example.training_2.entity.RepaymentSchedule;
+import com.example.training_2.exception.NotFoundException;
 import com.example.training_2.repository.CustomerRepository;
 import com.example.training_2.repository.LoanApplicationRepository;
 import com.example.training_2.repository.RepaymentScheduleRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LoanApplicationService {
         private final LoanApplicationRepository loanApplicationRepository;
@@ -56,11 +59,21 @@ public class LoanApplicationService {
         @Transactional
         public LoanApplicationResponse create(
                         CreateLoanApplicationRequest request) {
+                log.info(
+                                "Creating loan application. customerId={}, loanAmount={}, tenor={}",
+                                request.getCustomerId(),
+                                request.getLoanAmount(),
+                                request.getTenorMonth());
 
-                Customer customer = customerRepository.findById(
-                                request.getCustomerId())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Customer not found"));
+                // Customer customer = customerRepository.findById(
+                // request.getCustomerId())
+                // .orElseThrow(() -> new RuntimeException(
+                // "Customer not found"));
+                Customer customer = customerRepository.findById(request.getCustomerId())
+                                .orElseThrow(() -> {
+                                        log.warn("Customer not found. id={}", request.getCustomerId());
+                                        return new NotFoundException("Customer not found");
+                                });
 
                 LoanApplication loanApplication = new LoanApplication();
 
@@ -81,10 +94,16 @@ public class LoanApplicationService {
                 LoanApplication savedLoan = loanApplicationRepository.save(
                                 loanApplication);
 
+                log.info(
+                                "Loan application created successfully. loanId={}, customerId={}",
+                                savedLoan.getId(),
+                                customer.getId());
+
                 return mapToResponse(savedLoan);
         }
 
         public List<LoanApplicationResponse> getAll(LoanApplicationStatus status) {
+                log.debug("Getting loan applications. status={}", status);
                 List<LoanApplication> result;
 
                 if (status != null) {
@@ -92,6 +111,9 @@ public class LoanApplicationService {
                 } else {
                         result = loanApplicationRepository.findAll();
                 }
+                log.debug(
+                                "Found {} loan applications",
+                                result.size());
                 List<LoanApplicationResponse> loanApplications = new ArrayList<>();
                 for (LoanApplication loanApplication : result) {
                         loanApplications.add(mapToResponse(loanApplication));
@@ -100,6 +122,9 @@ public class LoanApplicationService {
         }
 
         public LoanApplicationResponse getById(Long id) {
+                log.debug(
+                                "Finding loan application by id={}",
+                                id);
                 LoanApplication loanApplication = loanApplicationRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Loan Application Not Found"));
                 return mapToResponse(loanApplication);
@@ -120,7 +145,16 @@ public class LoanApplicationService {
 
                 if (oldStatus != LoanApplicationStatus.APPROVED
                                 && request.getStatus() == LoanApplicationStatus.APPROVED) {
+                        log.info(
+                                        "Updating loan status. loanId={}, oldStatus={}, newStatus={}",
+                                        id,
+                                        oldStatus,
+                                        request.getStatus());
                         repaymentScheduleService.generateSchedules(loanApplication);
+                        log.info(
+                                        "Loan status updated successfully. loanId={}, status={}",
+                                        updatedLoanApplication.getId(),
+                                        updatedLoanApplication.getStatus());
                 }
 
                 return mapToResponse(updatedLoanApplication);
@@ -158,6 +192,9 @@ public class LoanApplicationService {
 
         public List<RepaymentScheduleResponse> getRepaymentSchedulesByLoanAppsId(
                         Long loanApplicationId) {
+                log.debug(
+                                "Getting repayment schedules. loanId={}",
+                                loanApplicationId);
 
                 LoanApplication loanApplication = loanApplicationRepository.findById(
                                 loanApplicationId)

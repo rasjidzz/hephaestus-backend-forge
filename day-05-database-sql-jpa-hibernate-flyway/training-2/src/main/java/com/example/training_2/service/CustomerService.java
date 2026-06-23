@@ -14,20 +14,19 @@ import com.example.training_2.dto.PatchCustomerRequest;
 import com.example.training_2.dto.UpdateCustomerRequest;
 import com.example.training_2.entity.Customer;
 import com.example.training_2.entity.LoanApplication;
+import com.example.training_2.exception.CustomerAlreadyExistsException;
 import com.example.training_2.repository.CustomerRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
     private final LoanApplicationRepository loanApplicationRepository;
     private final CustomerRepository customerRepository;
-
-    // CustomerService(LoanApplicationRepository loanApplicationRepository) {
-    // this.loanApplicationRepository = loanApplicationRepository;
-    // }
 
     private void fill(Customer customer, CreateCustomerRequest request) {
         customer.setFullName(request.getFullName());
@@ -55,13 +54,49 @@ public class CustomerService {
 
     @Transactional
     public CustomerResponse create(CreateCustomerRequest request) {
+
+        log.info(
+                "Creating customer. email={}, nik={}",
+                request.getEmail(),
+                request.getNik());
+
+        if (customerRepository.existsByNik(request.getNik())) {
+
+            log.warn(
+                    "Customer creation failed. NIK already exists. nik={}",
+                    request.getNik());
+
+            throw new CustomerAlreadyExistsException(
+                    "Customer already exists with NIK: " + request.getNik());
+        }
+
+        if (customerRepository.existsByEmail(request.getEmail())) {
+
+            log.warn(
+                    "Customer creation failed. Email already exists. email={}",
+                    request.getEmail());
+
+            throw new CustomerAlreadyExistsException(
+                    "Customer already exists with email: " + request.getEmail());
+        }
+
         Customer customer = new Customer();
         fill(customer, request);
-        return toResponse(customerRepository.save(customer));
+        customer = customerRepository.save(customer);
+
+        log.info(
+                "Customer created successfully. id={}, email={}",
+                customer.getId(),
+                customer.getEmail());
+
+        return toResponse(customer);
     }
 
     public List<CustomerResponse> getAll(String full_name) {
+        log.debug("Searching customers. fullName={}", full_name);
+
         List<Customer> customers = new ArrayList<>();
+
         if (full_name != null) {
             customers = customerRepository.findByFullNameContainingIgnoreCase(full_name);
         } else {
@@ -72,19 +107,35 @@ public class CustomerService {
         for (Customer customer : customers) {
             customerResponses.add(mapToResponse(customer));
         }
+
+        log.debug("Found {} customers", customers.size());
+
         return customerResponses;
     }
 
     public CustomerResponse getById(Long id) {
+        // log.debug("Finding customer. id={}", id);
+        // Customer customer = customerRepository.findById(id)
+        // .orElseThrow(() -> new RuntimeException("Customer Not Found"));
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer Not Found"));
+                .orElseThrow(() -> {
+                    log.warn("Customer not found. id={}", id);
+                    return new RuntimeException("Customer not found");
+                });
+
         return mapToResponse(customer);
     }
 
     public CustomerResponse update(Long id, UpdateCustomerRequest request) {
+        log.info("Updating customer. id={}", id);
 
+        // Customer customer = customerRepository.findById(id)
+        // .orElseThrow(() -> new RuntimeException("Customer not found"));
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> {
+                    log.warn("Customer not found. id={}", id);
+                    return new RuntimeException("Customer not found");
+                });
 
         customer.setFullName(request.getFullName());
         customer.setNik(request.getNik());
@@ -92,6 +143,8 @@ public class CustomerService {
         customer.setPhoneNumber(request.getPhoneNumber());
 
         customerRepository.save(customer);
+
+        log.info("Customer updated successfully. id={}", id);
 
         return mapToResponse(customer);
     }
@@ -124,10 +177,20 @@ public class CustomerService {
 
     public void delete(Long id) {
 
+        log.info("Deleting customer. id={}", id);
+
+        // Customer customer = customerRepository.findById(id)
+        // .orElseThrow(() -> new RuntimeException("Customer not found"));
+
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> {
+                    log.warn("Customer not found. id={}", id);
+                    return new RuntimeException("Customer not found");
+                });
 
         customerRepository.delete(customer);
+
+        log.info("Customer deleted successfully. id={}", id);
     }
 
     public List<LoanApplicationResponse> getLoanApplicationsByCustomerId(Long customerId) {

@@ -2,6 +2,8 @@ package com.example.training_2.dto;
 
 import java.util.List;
 
+import org.slf4j.MDC;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,12 +20,14 @@ public class WebResponse<T> {
     private String error;
     private List<String> details;
     private long timestamp;
+    private String correlationId;
 
     public static <T> WebResponse<T> success(String message, T data) {
         return WebResponse.<T>builder().success(true)
                 .message(message)
                 .data(data)
                 .timestamp(System.currentTimeMillis())
+                .correlationId(MDC.get("correlation_id"))
                 .build();
     }
 
@@ -33,6 +37,7 @@ public class WebResponse<T> {
                 .message(message)
                 .error(error)
                 .timestamp(System.currentTimeMillis())
+                .correlationId(MDC.get("correlation_id"))
                 .build();
     }
 
@@ -43,6 +48,7 @@ public class WebResponse<T> {
                 .error(error)
                 .details(details)
                 .timestamp(System.currentTimeMillis())
+                .correlationId(MDC.get("correlation_id"))
                 .build();
     }
 }

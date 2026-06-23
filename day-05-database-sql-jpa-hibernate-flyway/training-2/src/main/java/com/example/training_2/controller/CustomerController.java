@@ -11,6 +11,7 @@ import com.example.training_2.dto.PatchCustomerRequest;
 import com.example.training_2.dto.WebResponse;
 import com.example.training_2.service.CustomerService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping()
-    public WebResponse<CustomerResponse> create(@RequestBody CreateCustomerRequest entity) {
+    public WebResponse<CustomerResponse> create(@Valid @RequestBody CreateCustomerRequest entity) {
         return WebResponse.success("Successfully Add Data Customer", customerService.create(entity));
     }
 

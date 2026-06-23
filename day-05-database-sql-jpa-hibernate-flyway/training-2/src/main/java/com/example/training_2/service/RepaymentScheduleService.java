@@ -18,91 +18,99 @@ import com.example.training_2.repository.RepaymentScheduleRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class RepaymentScheduleService {
-    @Value("${loan.interest.annual-rate}")
-    private BigDecimal annualRate;
+        @Value("${loan.interest.annual-rate}")
+        private BigDecimal annualRate;
 
-    private final RepaymentScheduleRepository repaymentScheduleRepository;
+        private final RepaymentScheduleRepository repaymentScheduleRepository;
 
-    public void generateSchedules(LoanApplication loanApplication) {
-        // ambil loan amount
-        BigDecimal loanAmount = loanApplication.getLoanAmount();
+        public void generateSchedules(LoanApplication loanApplication) {
+                log.info(
+                                "Generating repayment schedules. loanId={}",
+                                loanApplication.getId());
+                // ambil loan amount
+                BigDecimal loanAmount = loanApplication.getLoanAmount();
 
-        // ambil tenor
-        int tenor = loanApplication.getTenorMonth();
+                // ambil tenor
+                int tenor = loanApplication.getTenorMonth();
 
-        // hitung monthly rate
-        BigDecimal monthlyInterestRate = annualRate.divide(BigDecimal.valueOf(12), 6, RoundingMode.HALF_UP);
+                // hitung monthly rate
+                BigDecimal monthlyInterestRate = annualRate.divide(BigDecimal.valueOf(12), 6, RoundingMode.HALF_UP);
 
-        // hitung principal
-        BigDecimal principalAmount = loanAmount.divide(BigDecimal.valueOf(tenor), 2, RoundingMode.HALF_UP);
+                // hitung principal
+                BigDecimal principalAmount = loanAmount.divide(BigDecimal.valueOf(tenor), 2, RoundingMode.HALF_UP);
 
-        // hitung interest
-        BigDecimal interestAmount = loanAmount.multiply(monthlyInterestRate).setScale(2, RoundingMode.HALF_UP);
+                // hitung interest
+                BigDecimal interestAmount = loanAmount.multiply(monthlyInterestRate).setScale(2, RoundingMode.HALF_UP);
 
-        // hitung total cicilan per bulan
-        BigDecimal totalAmount = principalAmount.add(interestAmount);
-        LocalDate dueDate = LocalDate.now();
+                // hitung total cicilan per bulan
+                BigDecimal totalAmount = principalAmount.add(interestAmount);
+                LocalDate dueDate = LocalDate.now();
 
-        List<RepaymentSchedule> schedules = new ArrayList<>();
+                List<RepaymentSchedule> schedules = new ArrayList<>();
 
-        // for tiap bulan {
-        for (int installmentNumber = 1; installmentNumber <= tenor; installmentNumber++) {
-            // buat repayment schedule
-            RepaymentSchedule schedule = new RepaymentSchedule();
+                // for tiap bulan {
+                for (int installmentNumber = 1; installmentNumber <= tenor; installmentNumber++) {
+                        // buat repayment schedule
+                        RepaymentSchedule schedule = new RepaymentSchedule();
 
-            schedule.setLoanApplication(loanApplication);
-            // isi installment number
-            schedule.setInstallmentNumber(installmentNumber);
-            // isi principal
-            schedule.setPrincipalAmount(principalAmount);
-            // isi interest
-            schedule.setInterestAmount(interestAmount);
-            // isi total
-            schedule.setTotalAmount(totalAmount);
-            // isi due date
-            schedule.setDueDate(dueDate);
+                        schedule.setLoanApplication(loanApplication);
+                        // isi installment number
+                        schedule.setInstallmentNumber(installmentNumber);
+                        // isi principal
+                        schedule.setPrincipalAmount(principalAmount);
+                        // isi interest
+                        schedule.setInterestAmount(interestAmount);
+                        // isi total
+                        schedule.setTotalAmount(totalAmount);
+                        // isi due date
+                        schedule.setDueDate(dueDate);
 
-            // status = UNPAID
-            schedule.setStatus(RepaymentScheduleStatus.UNPAID);
+                        // status = UNPAID
+                        schedule.setStatus(RepaymentScheduleStatus.UNPAID);
 
-            schedules.add(schedule);
+                        schedules.add(schedule);
 
-            dueDate = dueDate.plusMonths(1);
+                        dueDate = dueDate.plusMonths(1);
+                }
+
+                repaymentScheduleRepository.saveAll(schedules);
+                log.info(
+                                "Repayment schedules generated successfully. loanId={}",
+                                loanApplication.getId());
         }
 
-        repaymentScheduleRepository.saveAll(schedules);
-    }
+        private RepaymentScheduleResponse mapToResponse(
+                        RepaymentSchedule repaymentSchedule) {
 
-    private RepaymentScheduleResponse mapToResponse(
-            RepaymentSchedule repaymentSchedule) {
+                return RepaymentScheduleResponse.builder()
+                                .id(repaymentSchedule.getId())
+                                .loanApplicationId(
+                                                repaymentSchedule.getLoanApplication().getId())
+                                .installmentNumber(
+                                                repaymentSchedule.getInstallmentNumber())
+                                .dueDate(repaymentSchedule.getDueDate())
+                                .principalAmount(
+                                                repaymentSchedule.getPrincipalAmount())
+                                .interestAmount(
+                                                repaymentSchedule.getInterestAmount())
+                                .totalAmount(
+                                                repaymentSchedule.getTotalAmount())
+                                .status(repaymentSchedule.getStatus().toString())
+                                .build();
+        }
 
-        return RepaymentScheduleResponse.builder()
-                .id(repaymentSchedule.getId())
-                .loanApplicationId(
-                        repaymentSchedule.getLoanApplication().getId())
-                .installmentNumber(
-                        repaymentSchedule.getInstallmentNumber())
-                .dueDate(repaymentSchedule.getDueDate())
-                .principalAmount(
-                        repaymentSchedule.getPrincipalAmount())
-                .interestAmount(
-                        repaymentSchedule.getInterestAmount())
-                .totalAmount(
-                        repaymentSchedule.getTotalAmount())
-                .status(repaymentSchedule.getStatus().toString())
-                .build();
-    }
+        public RepaymentScheduleResponse getById(Long id) {
 
-    public RepaymentScheduleResponse getById(Long id) {
+                RepaymentSchedule repaymentSchedule = repaymentScheduleRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException("Repayment schedule not found"));
 
-        RepaymentSchedule repaymentSchedule = repaymentScheduleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Repayment schedule not found"));
-
-        return mapToResponse(repaymentSchedule);
-    }
+                return mapToResponse(repaymentSchedule);
+        }
 }
